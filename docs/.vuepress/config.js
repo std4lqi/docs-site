@@ -111,7 +111,7 @@ const ALL_PAGES = [{
       items: [
         'extend/extend-desktop/mvd-extend.md',
         'extend/extend-desktop/mvd-extend-create-mng.md',
-        'extend/extend-desktop/mvd-mvd-extend-dataservices.md',
+        'extend/extend-desktop/mvd-extend-dataservices.md',
         'extend/extend-desktop/mvd-extend-logging.md',
         'extend/extend-desktop/mvd-extend-windows.md',
         'extend/extend-desktop/mvd-extend-tutorials.md',
