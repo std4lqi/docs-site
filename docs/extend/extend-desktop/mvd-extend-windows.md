@@ -1,0 +1,2 @@
+# Managing windows
+Some text

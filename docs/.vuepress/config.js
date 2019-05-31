@@ -109,18 +109,13 @@ const ALL_PAGES = [{
     {
       text: 'Developing for Zowe Application Framework',
       items: [
-        'extend/extend-desktop/mvd-extendingzlux.md',
-        'extend/extend-desktop/mvd-creatingappplugins.md',
-        'extend/extend-desktop/mvd-plugindefandstruct.md',
-        'extend/extend-desktop/mvd-dataservices.md',
-        'extend/extend-desktop/mvd-desktopandwindowmgt.md',
-        'extend/extend-desktop/mvd-configdataservice.md',
-        'extend/extend-desktop/mvd-uribroker.md',
-        'extend/extend-desktop/mvd-apptoappcommunication.md',
-        'extend/extend-desktop/mvd-errorreportingui.md',
-        'extend/extend-desktop/mvd-logutility.md',
-        'extend/extend-desktop/zlux-app-server.md',
-        'extend/extend-desktop/zlux-workshop-user-browser.md',
+        'extend/extend-desktop/mvd-extend.md',
+        'extend/extend-desktop/mvd-extend-create-mng.md',
+        'extend/extend-desktop/mvd-mvd-extend-dataservices.md',
+        'extend/extend-desktop/mvd-extend-logging.md',
+        'extend/extend-desktop/mvd-extend-windows.md',
+        'extend/extend-desktop/mvd-extend-tutorials.md',
+        'extend/extend-desktop/mvd-extend-sampleapps.md',
       ]
     }
   ]
