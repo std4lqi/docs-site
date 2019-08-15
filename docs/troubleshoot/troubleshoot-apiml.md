@@ -178,11 +178,11 @@ Unexpected error, please try again later (SEC0002)
 
 **Solution:**
 
-Identify the nature of the issue by opening ZOWESVR joblog and look for a message containing `ZosmfAuthenticationProvider`. Use one of the following solutions to fix the issue:
+Open ZOWESVR joblog and look for a message containing `ZosmfAuthenticationProvider` to identify the nature of the issue. Use one of the following solutions to fix the issue:
 
 - [Change z/OSMF configuration](#change-z/osmf-configuration)
-- [Fix z/OSMF certificates](#fix-z/osmf-certificates)
-- [Fix DNS name in z/OSMF certificate](#fix-dns-name-in-z/osmf-certificates)
+- [Fix the z/OSMF certificate](#fix-the-z/osmf-certificate)
+- [Fix a DNS name in z/OSMF certificate](#fix-a-dns-name-in-z/osmf-certificate)
 
 #### Change z/OSMF configuration
 
@@ -197,13 +197,13 @@ Change z/OSMF configuration.
 For more information, see [Syntax rules for IZUPRMxx](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_IZUPRMxx.htm).
 <!-- TODO. Check why this link was provided in the first place. Maybe we should expand the procedure to include all necessary steps that will fix the issue -->
 
-#### Fix z/OSMF certificate
+#### Fix the z/OSMF certificate
 
 Fix the invalid certificate for z/OSMF.
 <!-- TODO. There are two ways of fixing the issue, but I'd rather pick one (most suitable) -->
 **Follow these steps:**
 
-1. Obtain a valid certificate for z/OSMF and place it into the z/OSMF keyring. For further details see [Configure the z/OSMF Keyring and Certificate](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_KeyringAndCertificate.htm).
+1. Obtain a valid certificate for z/OSMF and place it into the z/OSMF keyring. For more information, see [Configure the z/OSMF Keyring and Certificate](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_KeyringAndCertificate.htm).
 2. Navigate to `$ZOWE_RUNTIME/api-mediation` and run the following command:
     ```
     scripts/apiml_cm.sh --action trust-zosmf 
