@@ -213,7 +213,7 @@ Fix the invalid certificate for z/OSMF.
     scripts/apiml_cm.sh --action trust-zosmf --zosmf-userid **ZOSMF_USER** --zosmf-keyring **ZOSMF_KEYRING**
     ```
     The `--zosmf-keyring` and `--zosmf-userid` options override the default userid and keyring.
-<!-- TODO. Probably we should add the insecure way of fixing this issue. -->
+<!-- TODO. Probably we should not add the insecure way of fixing this issue. -->
 
 #### Fix a DNS name in z/OSMF certificate
 
