@@ -161,3 +161,64 @@ The following message is a typical error message displayed in STDOUT:
 Restart API Mediation Layer. 
 
 **Tip:**  To prevent this issue from occurring, it is strongly recommended not to restart TCP/IP stack while the API ML is running.
+
+### Unexpected error when logging in API Catalog
+
+**Symptom:**
+
+Failure to log into API Catalog that is caused by failed z/OSMF authentication.
+
+**Sample message:**
+
+The following message is displayed when attempting to log into API Catalog:
+
+```
+Unexpected error, please try again later (SEC0002)
+```
+
+**Solution:**
+
+Identify the nature of the issue by opening ZOWESVR joblog and look for a message containing `ZosmfAuthenticationProvider`. Use one of the following solutions to fix the issue:
+
+- [Change z/OSMF configuration](#change-z/osmf-configuration)
+- [Fix z/OSMF certificates](#fix-z/osmf-certificates)
+- [Fix DNS name in z/OSMF certificate](#fix-dns-name-in-z/osmf-certificates)
+
+#### Change z/OSMF configuration
+
+Change z/OSMF configuration.
+
+**Follow these steps:**
+
+1. Ensure that z/OSMF listens on localhost 127.0.0.1.
+2. Identify z/OSMF PARMLIB member IZUPRMxx in SYS1.PARMLIB(IZUPRM00).
+3. Change `HOSTNAME('10.175.81.28')` to `HOSTNAME('*')`.
+<!-- TODO. We might need more context here -->
+For more information, see [Syntax rules for IZUPRMxx](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_IZUPRMxx.htm).
+<!-- TODO. Check why this link was provided in the first place. Maybe we should expand the procedure to include all necessary steps that will fix the issue -->
+
+#### Fix z/OSMF certificate
+
+Fix the invalid certificate for z/OSMF.
+<!-- TODO. There are two ways of fixing the issue, but I'd rather pick one (most suitable) -->
+**Follow these steps:**
+
+1. Obtain a valid certificate for z/OSMF and place it into the z/OSMF keyring. For further details see [Configure the z/OSMF Keyring and Certificate](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_KeyringAndCertificate.htm).
+2. Navigate to `$ZOWE_RUNTIME/api-mediation` and run the following command:
+    ```
+    scripts/apiml_cm.sh --action trust-zosmf 
+    ```
+3. (Optional) If you do not use the default z/OSMF userid (IZUSVR) and keyring (IZUKeyring.IZUDFLT), issue the following command:
+    ```
+    scripts/apiml_cm.sh --action trust-zosmf --zosmf-userid **ZOSMF_USER** --zosmf-keyring **ZOSMF_KEYRING**
+    ```
+    The `--zosmf-keyring` and `--zosmf-userid` options override the default userid and keyring.
+<!-- TODO. Probably we should add the insecure way of fixing this issue. -->
+
+#### Fix a DNS name in z/OSMF certificate
+
+Use one of the following options to fix a DNS name in the z/OSMF certificate:
+
+- Request a new certificate that contains the existing DNS name.
+- Change `ZOWE_EXPLORER_HOST` to a DNS name from subject alternative names of the z/OSMF certificate in `.zowe_profile` in home directory of user who runs Zowe installation. 
+<!-- TODO. in the last options, Is all this information "in home directory of user who runs Zowe installation." important? -->
