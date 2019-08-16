@@ -162,7 +162,7 @@ Restart API Mediation Layer.
 
 **Tip:**  To prevent this issue from occurring, it is strongly recommended not to restart TCP/IP stack while the API ML is running.
 
-### Unexpected error when logging in API Catalog
+### Unexpected error when logging into API Catalog
 
 **Symptom:**
 
@@ -221,4 +221,96 @@ Use one of the following options to fix a DNS name in the z/OSMF certificate:
 
 - Request a new certificate that contains the existing DNS name.
 - Change `ZOWE_EXPLORER_HOST` to a DNS name from subject alternative names of the z/OSMF certificate in `.zowe_profile` in home directory of user who runs Zowe installation. 
-<!-- TODO. in the last options, Is all this information "in home directory of user who runs Zowe installation." important? -->
+<!-- TODO. It's not "runs", it's smth else instead-->
+
+
+
+### SEC0002 error when logging into API Catalog
+
+**Symptom:**
+
+Failure to log into API Catalog that is caused by incorrect z/OSMF configuration. 
+
+**Sample message:**
+
+The following message is displayed when attempting to log into API Catalog:
+
+```
+Connect to MVSDE25.lvn.broadcom.net:1443 .MVSDE25.lvn.broadcom.net/127.0.0.1. failed: EDC8128I Connection refused.; nested exception is org.apache.http.conn.HttpHostConnectException: Connect to MVSDE25.lvn.broadcom.net:1443 .MVSDE25.lvn.broadcom.net/127.0.0.1. failed: EDC8128I Connection refused
+```
+<!-- Make the text in the codeblock more readable -->
+**Solution:**
+
+Change z/OSMF configuration.
+
+**Follow these steps:**
+
+1. Ensure that z/OSMF listens on localhost 127.0.0.1.
+2. Identify z/OSMF PARMLIB member IZUPRMxx in SYS1.PARMLIB(IZUPRM00).
+3. Change `HOSTNAME('10.175.81.28')` to `HOSTNAME('*')`.
+<!-- TODO. We might need more context here -->
+For more information, see [Syntax rules for IZUPRMxx](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_IZUPRMxx.htm).
+<!-- TODO. Check why this link was provided in the first place. Maybe we should expand the procedure to include all necessary steps that will fix the issue -->
+
+### SEC0002 error when logging into API Catalog
+
+**Symptom:**
+
+Failure to log into API Catalog that is caused by invalid z/OSMF certificate.
+
+**Sample message:**
+
+The following message is displayed when attempting to log into API Catalog:
+
+```
+Certificate for <MVSDE25.lvn.broadcom.net> doesn't match any of the subject alternative names: ..; nested exception is javax.net.ssl.SSLPeerUnverifiedException: Certificate for <MVSDE25.lvn.broadcom.net> doesn't match any of the subject alternative names: ..
+```
+
+**Solution:**
+
+Fix the invalid certificate for z/OSMF using the following methods:
+
+- [Suitable for production fix](#suitable-for-production-fix)
+- [Suitable for development purposes fix](#suitable-for-development-purposes-fix)
+
+#### Suitable for production fix
+
+1. Obtain a valid certificate for z/OSMF and place it into the z/OSMF keyring. For more information, see [Configure the z/OSMF Keyring and Certificate](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_KeyringAndCertificate.htm).
+2. Navigate to `$ZOWE_RUNTIME/api-mediation` and run the following command:
+    ```
+    scripts/apiml_cm.sh --action trust-zosmf 
+    ```
+3. (Optional) If you do not use the default z/OSMF userid (IZUSVR) and keyring (IZUKeyring.IZUDFLT), issue the following command:
+    ```
+    scripts/apiml_cm.sh --action trust-zosmf --zosmf-userid **ZOSMF_USER** --zosmf-keyring **ZOSMF_KEYRING**
+    ```
+    The `--zosmf-keyring` and `--zosmf-userid` options override the default userid and keyring.
+<!-- TODO. Probably we should not add the insecure way of fixing this issue. -->
+
+#### Suitable for development purposes fix
+
+1. Reinstall Zowe
+2. Set the `verifyCertificatesOfServices` property to `false` in `zowe-install.yaml` to disable verification of certificates in Zowe.
+
+**Important!** This method is non-secure way, only for development purposes.
+<!-- What will hapen if I employ this fix -->
+
+
+### SEC0002 error when logging into API Catalog
+
+**Symptom:**
+
+Failure to log into API Catalog that is caused by a DNS name not listed in the z/OSMF certificate.
+
+**Sample message:**
+
+The following message is displayed when attempting to log into API Catalog:
+
+```
+Certificate for <USILCA32.lvn.broadcom.net> doesn't match any of the subject alternative names: [ca32.ca.com, ca32, localhost, ca32-virt, ca32-virt.ca.com, ca32-virt1, ca32-virt1.ca.com, ca32-virt2, ca32-virt2.ca.com, usilca32, usilca32.ca.com]; nested exception is javax.net.ssl.SSLPeerUnverifiedException: Certificate for <USILCA32.lvn.broadcom.net> doesn't match any of the subject alternative names: [ca32.ca.com, ca32, localhost, ca32-virt, ca32-virt.ca.com, ca32-virt1, ca32-virt1.ca.com, ca32-virt2, ca32-virt2.ca.com, usilca32, usilca32.ca.com]
+```
+
+**Solution:**
+
+Request a new certificate that contains the existing DNS name. Alternatively, you can change `ZOWE_EXPLORER_HOST` to a DNS name from subject alternative names of the z/OSMF certificate in `.zowe_profile` in home directory of user who runs Zowe installation. 
+<!-- TODO. It's not "runs", it's smth else instead-->
