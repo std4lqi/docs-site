@@ -192,23 +192,28 @@ The reason for the refused connection message is either invalid z/OSMF configura
 
 **Solution:**
 
-Change z/OSMF configuration.
+#### Configure z/OSMF
+
+Make sure that z/OSMF is running and is on 127.0.0.1:1443 interface, and try to log in to API Catalog again. If you get the same error message, change z/OSMF configuration.
 
 **Follow these steps:**
 
-1. Locate the z/OSMF PARMLIB member IZUPRMxx. 
+1. Locate the z/OSMF PARMLIB member IZUPRMxx.
 
     For example, locate IZUPRM00 member in SYS1.PARMLIB.
+    
 2. Change the current `HOSTNAME` configuration to `HOSTNAME('*')`.
 3. Change the current `HTTP_SSL_PORT` configuration to `HTTP_SSL_PORT('1443')`.
 
+    **Important!** If you change the port in the z/OSMF configuration file, all your applications lose connection to z/OSMF.
+
 For more information, see [Syntax rules for IZUPRMxx](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua300/izuconfig_IZUPRMxx.htm).
 
-If changing the z/OSMF configuration does not fix the issue, reconfigure Zowe. 
+If changing the z/OSMF configuration does not fix the issue, reconfigure Zowe.
 
 **Follow these steps:**
 
-1. Open `.zowe_profile` in the home directory of the user who installed Zowe. 
+1. Open `.zowe_profile` in the home directory of the user who installed Zowe.
 2. Modify the value of the `ZOWE_ZOSMF_PORT` variable. 
 3. Reinstall Zowe.
 
@@ -251,8 +256,8 @@ Fix the missing z/OSMF host name in subject alternative names using the followin
 
 **Follow these steps:**
 
-1. Reinstall Zowe.
-2. Set the value of the `verifyCertificatesOfServices` property to `false` in `zowe-install.yaml` to disable verification of certificates in Zowe.
+1. Set the value of the `verifyCertificatesOfServices` property to `false` in `zowe-install.yaml` to disable verification of certificates in Zowe.
+2. Reinstall Zowe.
 
 #### Invalid z/OSMF host name in subject alternative names
 
