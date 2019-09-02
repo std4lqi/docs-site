@@ -3,27 +3,27 @@
 As an API developer, use this guide to onboard your REST API service into the Zowe API Mediation Layer. This article outlines a step-by-step process to make your API service available in the API Mediation Layer.
 
 ## Communication between the application client and application server
-APIML Discovery uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used for locating services.
+APIML Discovery uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
 
-Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to onboards(register) your service to APIML Discovery. Your service should register itself and send heartbeat periodically to APIML Discovery. For registering there are minimum require params defined by Eureka which should be sent to the server at the registration time.
+Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to onboard (register) your service to the API ML Discovery Service. Your service should register itself and send a heartbeat periodically to the Discovery Service. Registering requires that the following list of parameters are defined by Eureka which are sent to the server at the time of registration: 
 
 ```
 ```
 
-* **appname** the service id
-* **hostname** the hostname of instance
-* **port** the port of instance when you choose http
-* **nonSecurePortEnabled** true or false
-* **securePort** the port of instance when you choose https
-* **securePortEnabled** true or false
-* **ipAddress** the ip address of instance
-* **instanceId** the id of instance; hostname:serviceId:port
-* **virtualHostname** the virtualHostname
-* **secureVirtualHostname** the virtualHostname
-* **metadata** the metadata
+* **appname** - the service id
+* **hostname** - the hostname of instance
+* **port** - the port of instance when you choose http
+* **nonSecurePortEnabled** - true or false
+* **securePort** - the port of instance when you choose https
+* **securePortEnabled** - true or false
+* **ipAddress** - the ip address of instance
+* **instanceId** - the id of instance; hostname:serviceId:port
+* **virtualHostname** - the virtualHostname
+* **secureVirtualHostname** - the virtualHostname
+* **metadata** - the metadata
 
 ## APIML Service Onboarding Metadata
-At registration time, metadata section is provided by the parameters below:
+At registration time, the metadata section is provided by the parameters below:
 
 ```xml
 <metadata>
