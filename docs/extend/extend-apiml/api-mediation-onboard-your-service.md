@@ -5,22 +5,50 @@ As an API developer, use this guide to onboard your REST API service into the Zo
 ## Communication between the application client and application server
 APIML Discovery uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
 
-Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to onboard (register) your service to the API ML Discovery Service. Your service should register itself and send a heartbeat periodically to the Discovery Service. Registering requires that the following list of parameters are defined by Eureka which are sent to the server at the time of registration: 
+Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to onboard (register) your service to the API ML Discovery Service. Your service should register itself and send a heartbeat periodically to the Discovery Service. 
 
-```
+### Service registration
+Registering requires that the following list of parameters are defined by Eureka which are sent to the server at the time of registration: 
+
+**POST** ```{host}/eureka/apps/{serviceId}```
+
+```xml
+<?xml version="1.0" ?>
+<instance>
+  <app>{serviceId}</app>
+  <ipAddr>{ipAddress}</ipAddr>
+  <port enabled="false">{port}</port>
+  <securePort enabled="true">{port}</securePort>
+  <hostName>{hostname}</hostName>
+  <vipAddress>{serviceId}</vipAddress>
+  <secureVipAddress>{serviceId}</secureVipAddress>
+  <instanceId>{instanceId}</instanceId>
+  <dataCenterInfo>
+    <name>MyOwn</name>
+  </dataCenterInfo>
+  <metadata>
+        ...
+   </metadata>
+</instance>
 ```
 
-* **appname** - the service id
-* **hostname** - the hostname of instance
-* **port** - the port of instance when you choose http
-* **nonSecurePortEnabled** - true or false
-* **securePort** - the port of instance when you choose https
-* **securePortEnabled** - true or false
-* **ipAddress** - the ip address of instance
-* **instanceId** - the id of instance; hostname:serviceId:port
-* **virtualHostname** - the virtualHostname
-* **secureVirtualHostname** - the virtualHostname
-* **metadata** - the metadata
+* **app** the service id
+* **ipAddr** the ip address of instance
+* **hostname** the hostname of instance
+* **port** the port of instance when you use http, set `enabled="true"`
+* **securePort** the port of instance when you use https, set `enabled="true"`
+* **vipAddress** it can get any value. Best practice is to set the service id
+* **secureVipAddress** it can get any value. Best practice is to set the service id
+* **instanceId** unique id for instance; you can define unique format for instanceId. For example: ```{hostname}:{serviceId}:{port}```
+* **metadata** [the metadata of service]()
+
+
+### Sending hearbeat to APIML Discovery
+After registration, a service should send heartbeat periodically to Discovery service. If the Discovert service doesn’t receive a heartbeat, the service instance will be deleted.
+
+**Note:** In the practice, this time is chosen as 30 seconds.
+
+**PUT** ```{host}/eureka/apps/{serviceId}/{instanceId}```
 
 ## APIML Service Onboarding Metadata
 At registration time, the metadata section is provided by the parameters below:
@@ -123,6 +151,12 @@ The process of onboarding depends on the method that is used to develop the API 
    Required parameters should be defined and sent at registration time. For acting as a eureka client, there're eureka-client libraries depends on language. (for example, [python-eureka-client](https://pypi.org/project/py-eureka-client/), [eureka-js-client](https://www.npmjs.com/package/eureka-js-client))
 
  - [Rest API developed based on Java](https://www.zowe.org/docs-site/latest/extend/extend-apiml/api-mediation-onboard-overview.html#sample-rest-api-service)
+
+
+### External Resources
+- https://blog.asarkar.org/technical/netflix-eureka/
+- https://medium.com/@fahimfarookme/the-mystery-of-eureka-health-monitoring-5305e3beb6e9
+- https://github.com/Netflix/eureka/wiki/Eureka-REST-operations
 
 
 
