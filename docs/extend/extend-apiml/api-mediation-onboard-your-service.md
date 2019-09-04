@@ -95,7 +95,7 @@ These parameters are used to populate the API Catalog. The API Catalog contains 
        Specifies the semantic version of this API Catalog tile. Increase the version when you introduce new changes to the API services product family details (title and description). 
 
 ### Service parameters - apiml.service.*
-Say something about services
+Define service information for API Catalog
 
    * **apiml.service.title**
 
@@ -113,7 +113,8 @@ Say something about services
         **Tip:** We recommend that you provide a good default value or give good naming examples to the customers. Describe the service so that the end user knows the function of the service.
     
 ### Routing parameters - apiml.routes
-Say something about routing
+Define routing informations for APIML Gateway.
+<!--Add more info for routing-->
 
    * **apiml.routes._prefix_.gatewayUrl**
 
@@ -125,7 +126,8 @@ Say something about routing
 
 
 ### API Info Parameters - apiml.apiInfo.*
-Say something about api info
+Define api parameters for API(Swagger) documentation
+
    * **apiml.apiInfo._prefix_.apiId**
       
        Specifies the API identifier that is registered in the API Mediation Layer installation. The API ID uniquely identifies the API in the API Mediation Layer. The same API can be provided by multiple services. The API ID can be used to locate the same APIs that are provided by different services. The creator of the API defines this ID. The API ID needs to be a string of up to 64 characters that uses lowercase alphanumeric characters and a dot: `.`. We recommend that you use your organization as the prefix.
@@ -152,7 +154,8 @@ The process of onboarding depends on the method that is used to develop the API 
 
  - [Rest API developed based on Java](https://www.zowe.org/docs-site/latest/extend/extend-apiml/api-mediation-onboard-overview.html#sample-rest-api-service)
 
-
+### Verify 
+<!---->
 ### External Resources
 - https://blog.asarkar.org/technical/netflix-eureka/
 - https://medium.com/@fahimfarookme/the-mystery-of-eureka-health-monitoring-5305e3beb6e9
