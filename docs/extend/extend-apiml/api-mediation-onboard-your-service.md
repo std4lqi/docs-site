@@ -1,16 +1,20 @@
-# Onboard you service with API Meditation Layer
+# Onboard your service with the Zowe API Meditation Layer
 
 As an API developer, use this guide to onboard your REST API service into the Zowe API Mediation Layer. This article outlines a step-by-step process to make your API service available in the API Mediation Layer.
 
 ## Communication between the application client and application server
-APIML Discovery uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
+the API ML Discovery Service uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
 
-Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to onboard (register) your service to the API ML Discovery Service. Your service should register itself and send a heartbeat periodically to the Discovery Service. 
+Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to onboard (register) your service to the API ML Discovery Service. Use Eureka endpoints to register your service with the Discovery Service and send a periodic heartbeat to the Discovery Service. 
 
 ### Service registration
-Registering requires that the following list of parameters are defined by Eureka which are sent to the server at the time of registration: 
+Registering requires that the following list of parameters are defined by Eureka. These parameters are sent to the server at the time of registration. 
 
-**POST** ```{host}/eureka/apps/{serviceId}```
+When your application starts, call the following API with the POST method in the following format:
+
+ ```{host}/eureka/apps/{serviceId}```
+
+The following code block shows the format of the parameters in your POST call:
 
 ```xml
 <?xml version="1.0" ?>
@@ -31,27 +35,30 @@ Registering requires that the following list of parameters are defined by Eureka
    </metadata>
 </instance>
 ```
+where:
 
-* **app** the service id
-* **ipAddr** the ip address of instance
-* **hostname** the hostname of instance
-* **port** the port of instance when you use http, set `enabled="true"`
-* **securePort** the port of instance when you use https, set `enabled="true"`
-* **vipAddress** it can get any value. Best practice is to set the service id
-* **secureVipAddress** it can get any value. Best practice is to set the service id
-* **instanceId** unique id for instance; you can define unique format for instanceId. For example: ```{hostname}:{serviceId}:{port}```
-* **metadata** [the metadata of service]()
+* **app** is the service id
+* **ipAddr** is the ip address of instance
+* **hostname** is the hostname of instance
+* **port** is the port of instance when you use http, set `enabled="true"`
+* **securePort** is the port of instance when you use https, set `enabled="true"`
+* **vipAddress** is an address which can be any value when you use http. We recommend you set the address as the service id
+* **secureVipAddress** is an address which can be any value when you use https. We recommend you set the addres as the service id
+* **instanceId** is a unique id for an instance. We recommend that you define a unique value for the instanceId in the following format: ```{hostname}:{serviceId}:{port}```
+* **metadata** is the set of parameters described in the following topic [the metadata of service]()
 
 
-### Sending hearbeat to APIML Discovery
-After registration, a service should send heartbeat periodically to Discovery service. If the Discovert service doesn’t receive a heartbeat, the service instance will be deleted.
+### Sending heartbeat to APIML Discovery
+After registration, a service must send a heartbeat periodically to the Discovery Service to indicate that the service is available. If the Discovery Service does not receive a heartbeat, the service instance is deleted in the Discovery Service.
 
-**Note:** In the practice, this time is chosen as 30 seconds.
+**Note:** We recommend that interval for the heartbeat be no more than 30 seconds.
 
-**PUT** ```{host}/eureka/apps/{serviceId}/{instanceId}```
+Use the PUT method in the following format to tell the Discovery Service that your service is available:
+
+```{host}/eureka/apps/{serviceId}/{instanceId}```
 
 ## APIML Service Onboarding Metadata
-At registration time, the metadata section is provided by the parameters below:
+At registration time, provide metadata in the following format to include the following the parameters:
 
 ```xml
 <metadata>
@@ -73,6 +80,7 @@ At registration time, the metadata section is provided by the parameters below:
             <apiml.apiInfo.0.documentationUrl>https://www.zowe.org</apiml.apiInfo.0.documentationUrl>
  </metadata>
 ```
+The following list describes the parameters contained in the metadata:
 
 ### Catalog parameters - apiml.catalog.tile.*
 
