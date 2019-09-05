@@ -3,12 +3,12 @@
 As an API developer, use this guide to onboard your REST API service into the Zowe API Mediation Layer. This article outlines a step-by-step process to make your API service available in the API Mediation Layer.
 
 ## Communication between the application client and application server
-the API ML Discovery Service uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
+The API ML Discovery Service uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
 
 Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to onboard (register) your service to the API ML Discovery Service. Use Eureka endpoints to register your service with the Discovery Service and send a periodic heartbeat to the Discovery Service. 
 
 ### Service registration
-Registering requires that the following list of parameters are defined by Eureka. These parameters are sent to the server at the time of registration. 
+Registration requires that the following list of parameters are defined by Eureka. These parameters are sent to the server at the time of registration. 
 
 When your application starts, call the following API with the POST method in the following format:
 
@@ -51,14 +51,14 @@ where:
 ### Sending heartbeat to APIML Discovery
 After registration, a service must send a heartbeat periodically to the Discovery Service to indicate that the service is available. If the Discovery Service does not receive a heartbeat, the service instance is deleted in the Discovery Service.
 
-**Note:** We recommend that interval for the heartbeat be no more than 30 seconds.
+**Note:** We recommend that the interval for the heartbeat be no more than 30 seconds.
 
 Use the PUT method in the following format to tell the Discovery Service that your service is available:
 
 ```{host}/eureka/apps/{serviceId}/{instanceId}```
 
 ## APIML Service Onboarding Metadata
-At registration time, provide metadata in the following format to include the following the parameters:
+At registration time, provide metadata in the following format which include the following parameters:
 
 ```xml
 <metadata>
