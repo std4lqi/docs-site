@@ -162,8 +162,48 @@ The process of onboarding depends on the method that is used to develop the API 
 
  - [Rest API developed based on Java](https://www.zowe.org/docs-site/latest/extend/extend-apiml/api-mediation-onboard-overview.html#sample-rest-api-service)
 
-### Verify 
-<!---->
+### Verify if your service is onboard to API Meditation Layer
+After the onboarding process, you can check whether your service is onboard to API Meditation Layer. For this, check your service metadata in APIML Discovery. Use the **GET** method in the following format to ask from the Discovery Service that your service is onboard:
+
+```{host}/eureka/apps/{serviceId}```
+
+You receive a response like this:
+
+```xml
+<application>
+    <name>{serviceId}</name>
+    <instanceId>{hostname}:{serviceId}:{port}</instanceId>
+    <hostName>{hostname}</hostName>
+    <app>{serviceId}</app>
+    <ipAddr>{ipAddress}</ipAddr>
+    <status>UP</status>
+    <port enabled="false">{port}</port>
+    <securePort enabled="true">{port}</securePort>
+    <vipAddress>{serviceId}</vipAddress>
+    <secureVipAddress>{serviceId}</secureVipAddress>
+    <metadata>
+            <apiml.service.description>Sample API service showing how to onboard the service</apiml.service.description>
+            <apiml.routes.api__v1.gatewayUrl>api/v1</apiml.routes.api__v1.gatewayUrl>
+            <apiml.catalog.tile.version>1.0.1</apiml.catalog.tile.version>
+            <apiml.routes.ws__v1.serviceUrl>/sampleclient/ws</apiml.routes.ws__v1.serviceUrl>
+            <apiml.routes.ws__v1.gatewayUrl>ws/v1</apiml.routes.ws__v1.gatewayUrl>
+            <apiml.catalog.tile.description>Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem</apiml.catalog.tile.description>
+            <apiml.service.title>Sample Service ©</apiml.service.title>
+            <apiml.routes.ui__v1.gatewayUrl>ui/v1</apiml.routes.ui__v1.gatewayUrl>
+            <apiml.apiInfo.0.apiId>org.zowe.sampleclient</apiml.apiInfo.0.apiId>
+            <apiml.apiInfo.0.gatewayUrl>api/v1</apiml.apiInfo.0.gatewayUrl>
+            <apiml.apiInfo.0.documentationUrl>https://www.zowe.org</apiml.apiInfo.0.documentationUrl>
+            <apiml.catalog.tile.id>demoapp</apiml.catalog.tile.id>
+            <apiml.routes.ui__v1.serviceUrl>/sampleclient</apiml.routes.ui__v1.serviceUrl>
+            <apiml.routes.api__v1.serviceUrl>/sampleclient/api/v1</apiml.routes.api__v1.serviceUrl>
+            <apiml.apiInfo.0.swaggerUrl>https://hostname/sampleclient/api-doc</apiml.apiInfo.0.swaggerUrl>
+            <apiml.catalog.tile.title>Sample API Mediation Layer Applications</apiml.catalog.tile.title>
+    </metadata>
+</application>
+```
+
+If API call response shows the parameters as you sent it means your service is onboard.
+
 ### External Resources
 - https://blog.asarkar.org/technical/netflix-eureka/
 - https://medium.com/@fahimfarookme/the-mystery-of-eureka-health-monitoring-5305e3beb6e9
