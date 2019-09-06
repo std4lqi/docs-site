@@ -1,6 +1,6 @@
 # Onboard your service with the Zowe API Meditation Layer
 
-As an API developer, use this guide to onboard your REST API service into the Zowe API Mediation Layer. This article outlines a step-by-step process to make your API service available in the API Mediation Layer.
+Use this guide to onboard your REST API service into the Zowe API Mediation Layer. This article outlines a step-by-step process to make your API service available in the API Mediation Layer.
 
 ## Communication between the application client and application server
 The API ML Discovery Service uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
@@ -42,9 +42,9 @@ where:
 * **hostname** is the hostname of instance
 * **port** is the port of instance when you use http, set `enabled="true"`
 * **securePort** is the port of instance when you use https, set `enabled="true"`
-* **vipAddress** is an address which can be any value when you use http. We recommend you set the address as the service id
-* **secureVipAddress** is an address which can be any value when you use https. We recommend you set the addres as the service id
-* **instanceId** is a unique id for an instance. We recommend that you define a unique value for the instanceId in the following format: ```{hostname}:{serviceId}:{port}```
+* **vipAddress** is the service id when you use http
+* **secureVipAddress** is the service id when you use https
+* **instanceId** is a unique id for an instance. You define a unique value for the instanceId in the following format: ```{hostname}:{serviceId}:{port}```
 * **metadata** is the set of parameters described in the following topic [the metadata of service]()
 
 
@@ -62,7 +62,7 @@ At registration time, provide metadata in the following format which include the
 
 ```xml
 <metadata>
-  	        <apiml.catalog.tile.id>demoapp</apiml.catalog.tile.id>
+  	       <apiml.catalog.tile.id>demoapp</apiml.catalog.tile.id>
             <apiml.catalog.tile.title>Sample API Mediation Layer Applications</apiml.catalog.tile.title>
             <apiml.catalog.tile.description>Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem</apiml.catalog.tile.description>
             <apiml.catalog.tile.version>1.0.1</apiml.catalog.tile.version>
