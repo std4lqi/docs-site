@@ -7,165 +7,134 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *
- * Copyright IBM Corporation 2018
+ * Copyright IBM Corporation 2018, 2019
  */
 
-def isPullRequest = env.BRANCH_NAME.startsWith('PR-')
-def slackChannel = '#test-build-notify'
-def githubRepository = 'zowe/docs-site'
-def allowPublishing = false
-def isTestPublishing = false
-def publishTargetPath = 'stable'
-def isMasterBranch = env.BRANCH_NAME == 'master'
-def isReleaseBranch = env.BRANCH_NAME ==~ /^v[0-9]+\.[0-9]+\.[0-9x]+$/
+node('ubuntu1804-docker-4c-4g') {
+docker.image('markackertca/zowe-base').inside {
+  def lib = library("jenkins-library").org.zowe.jenkins_shared_library
 
-def opts = []
-// keep last 20 builds for regular branches, no keep for pull requests
-opts.push(buildDiscarder(logRotator(numToKeepStr: (isPullRequest ? '' : '20'))))
-// disable concurrent build
-opts.push(disableConcurrentBuilds())
+  // ============================== constants ==============================
+  def GITHUB_REPOSITORY = 'zowe/docs-site'
+  def isMasterBranch = env.BRANCH_NAME == 'master'
+  def isReleaseBranch = env.BRANCH_NAME ==~ /^v[0-9]+\.[0-9]+\.[0-9x]+$/
 
-// define custom build parameters
-def customParameters = []
-// >>>>>>>> parameters to control pipeline behavior
-customParameters.push(booleanParam(
-  name: 'RUN_PUBLISH',
-  description: 'If run the publish step. Only take effect when building on "master" and "v?.?.x" branches. This option provides a chance to disable publish on those branches.',
-  defaultValue: true
-))
-customParameters.push(string(
-  name: 'PUBLISH_BRANCH',
-  description: 'Target branch to publish. By default will be "gh-pages". If you specify a branch name starts with "gh-pages-test", you can always perform test publishing.',
-  defaultValue: 'gh-pages',
-  trim: true,
-  required: true
-))
-customParameters.push(string(
-  name: 'PUBLISH_PATH',
-  description: 'Target URL path to publish. Default is "stable" for master branch, "v?.?.x" for v?.?.x release branches.',
-  defaultValue: '',
-  trim: true,
-  required: false
-))
-customParameters.push(booleanParam(
-  name: 'FULL_SITE_LINKS_CHECK',
-  description: 'If run links check on all latest and archived versions, not only checking current build.',
-  defaultValue: false
-))
-customParameters.push(credentials(
-  name: 'GITHUB_CREDENTIALS',
-  description: 'Github user credentials. Required to publish build result to gh-pages.',
-  credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
-  defaultValue: 'zowe-robot-github',
-  required: true
-))
-customParameters.push(string(
-  name: 'GITHUB_USER_EMAIL',
-  description: 'github user email',
-  defaultValue: 'zowe.robot@gmail.com',
-  trim: true,
-  required: true
-))
-customParameters.push(string(
-  name: 'GITHUB_USER_NAME',
-  description: 'github user name',
-  defaultValue: 'Zowe Robot',
-  trim: true,
-  required: true
-))
-opts.push(parameters(customParameters))
+  // ============================== variables ==============================
+  // If run the publish step. Only take effect when building on "master" and 
+  // "v?.?.x" branches. This option provides a chance to disable publish on
+  // those branches.
+  def RUN_PUBLISH = true
+  // Target branch to publish. By default will be "gh-pages". If you specify a
+  // branch name starts with "gh-pages-test", you can always perform test
+  // publishing.
+  def PUBLISH_BRANCH = 'gh-pages-test'
+  // Target URL path to publish. Default is "stable" for master branch, "v?.?.x"
+  // for v?.?.x release branches.
+  def PUBLISH_PATH = ''
+  // If run links check on all latest and archived versions, not only checking
+  // current build.
+  def FULL_SITE_LINKS_CHECK = false
 
-// set build properties
-properties(opts)
-
-node ('ibm-jenkins-slave-dind') {
-  currentBuild.result = 'SUCCESS'
+  // below variables will be adjusted based on other variable values
+  def allowPublishing = false
+  def isTestPublishing = PUBLISH_BRANCH.startsWith('gh-pages-test')
+  def publishTargetPath = 'stable'
+  def githubDeploy = null
 
   // if we are on master, or v?.?.? / v?.?.x branch, we allow publish
   // if we publish target branch to test branch, we allow it anyway
-  isTestPublishing = params.PUBLISH_BRANCH.startsWith('gh-pages-test')
   if (isMasterBranch || isReleaseBranch || isTestPublishing) {
     allowPublishing = true
   }
   if (allowPublishing && isReleaseBranch) {
     publishTargetPath = env.BRANCH_NAME
   }
-  if (allowPublishing && params.PUBLISH_PATH) { // this is manually assigned parameter value
-    publishTargetPath = params.PUBLISH_PATH
+  if (allowPublishing && PUBLISH_PATH) { // this is manually assigned parameter value
+    publishTargetPath = PUBLISH_PATH
   }
+  def publishTargetPathConverted = publishTargetPath.replaceAll(/\./, '-')
 
-  try {
+  def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
 
-    stage('checkout') {
-      // checkout source code
-      checkout scm
+  pipeline.admins.add("jackjia.ibm")
 
-      // check if it's pull request
-      echo "Current branch is ${env.BRANCH_NAME}"
-      if (allowPublishing) {
-        echo "**** Will publish to \"${params.PUBLISH_BRANCH}\" branch \"${publishTargetPath}\" directory"
-      } else {
-        echo "**** Publish stage will be skipped"
-      }
-      if (isPullRequest) {
-        echo "This is a pull request"
-      }
-    }
+  pipeline.setup(
+    packageName: 'org.zowe.docs',
+    github: [
+      email                      : lib.Constants.DEFAULT_GITHUB_ROBOT_EMAIL,
+      usernamePasswordCredential : 'zowe-github',
+    ],
+    // FIXME: ideally this should set to false (using default by remove this line)
+    ignoreAuditFailure            : true
+  )
 
-    stage('prepare') {
+  pipeline.createStage(
+    name          : "Prepare .deploy",
+    isSkippable   : true,
+    stage         : {
       // prepare .deploy folder
-      // checkout params.PUBLISH_BRANCH to .deploy folder
-      sh """
-        git config --global user.email \"${params.GITHUB_USER_EMAIL}\"
-        git config --global user.name \"${params.GITHUB_USER_NAME}\"
-        mkdir -p .deploy
-        cd .deploy
-        git init
-        git remote add origin https://github.com/${githubRepository}.git
-        git fetch
-        git checkout -B ${params.PUBLISH_BRANCH}
-        if [ -n "\$(git ls-remote --heads origin ${params.PUBLISH_BRANCH})" ]; then git pull origin ${params.PUBLISH_BRANCH}; fi
-        cd ..
-      """
+      // checkout PUBLISH_BRANCH to .deploy folder
+      githubDeploy = lib.scm.GitHub.new(this)
+      if (!githubDeploy) {
+          error 'Failed to initialize GitHub instance.'
+      }
+      githubDeploy.init([
+        repository                 : TEST_REPORSITORY,
+        branch                     : PUBLISH_BRANCH,
+        folder                     : '.deploy',
+        email                      : lib.Constants.DEFAULT_GITHUB_ROBOT_EMAIL,
+        usernamePasswordCredential : 'zowe-github',
+      ])
+      githubDeploy.cloneRepository()
+
       if (isMasterBranch) {
         // alway try to update default pages from master branch
         sh 'cp -r gh-pages-default/. .deploy/'
       }
-    }
+    },
+    timeout: [time: 20, unit: 'MINUTES']
+  )
 
-    stage('build') {
+  // we have a custom build command
+  pipeline.build(
+    operation: {
       ansiColor('xterm') {
         sh 'npm install'
-        sh "PUBLISH_TARGET_PATH=${publishTargetPath} NODE_OPTIONS=--max_old_space_size=4096 npm run docs:build"
+        sh "PUBLISH_TARGET_PATH=${publishTargetPath} " +
+           "NODE_OPTIONS=--max_old_space_size=4096 " +
+           "npm run docs:build"
       }
     }
+  )
 
-    stage('test') {
+  pipeline.test(
+    name          : 'Broken Links',
+    operation         : {
       ansiColor('xterm') {
         // list all files generated
         sh "find .deploy | grep -v '.deploy/.git'"
         // check broken links
         timeout(30) {
-          if (params.FULL_SITE_LINKS_CHECK) {
+          if (FULL_SITE_LINKS_CHECK) {
             sh 'npm run test:links'
           } else {
-            def publishTargetPathConverted = publishTargetPath.replaceAll(/\./, '-')
             sh "npm run test:links -- --start-point /${publishTargetPathConverted}/"
           }
         }
       }
-    }
+    },
+    allowMissingJunit : true
+  )
 
-    stage('pdf') {
+  pipeline.createStage(
+    name          : "Generate PDF",
+    isSkippable   : true,
+    stage         : {
       ansiColor('xterm') {
-        // lock building pdf step since the docker pulling image stage cause build failure
-        lock('building-docs-pdf') {
-          timeout(time: 1, unit: 'HOURS') {
-            sh 'npm run docs:pdf'
-          }
+        timeout(time: 1, unit: 'HOURS') {
+          sh 'npm run docs:pdf'
         }
         if (fileExists('.deploy/.pdf/out/Zowe_Documentation.pdf')) {
-          def publishTargetPathConverted = publishTargetPath.replaceAll(/\./, '-')
           sh "cp .deploy/.pdf/out/Zowe_Documentation.pdf .deploy/${publishTargetPathConverted}/"
         } else {
           error 'Failed to generate PDF document.'
@@ -174,58 +143,21 @@ node ('ibm-jenkins-slave-dind') {
         echo 'Cleaning up .deploy/.pdf ...'
         sh 'rm -fr .deploy/.pdf || true'
       }
+    },
+    timeout: [time: 20, unit: 'MINUTES']
+  )
+
+  // define we need publish stage
+  pipeline.publish(
+    shouldExecute : {
+      return allowPublishing && RUN_PUBLISH
+    },
+    operation: {
+      githubDeploy.commit("deploy from ${env.JOB_NAME}#${env.BUILD_NUMBER}")
+      githubDeploy.push()
     }
+  )
 
-    utils.conditionalStage('publish', allowPublishing && params.RUN_PUBLISH) {
-      ansiColor('xterm') {
-        withCredentials([usernamePassword(
-          credentialsId: params.GITHUB_CREDENTIALS,
-          passwordVariable: 'GIT_PASSWORD',
-          usernameVariable: 'GIT_USERNAME'
-        )]) {
-          sh """
-            cd .deploy
-            git add -A
-            git commit -s -m \"deploy from ${env.JOB_NAME}#${env.BUILD_NUMBER}\"
-            git push 'https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${githubRepository}.git' ${params.PUBLISH_BRANCH}
-          """
-        }
-      }
-    }
-
-    stage('done') {
-      // send out notification
-      // slackSend channel: slackChannel,
-      //           color: 'good',
-      //           message: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} succeeded.\n\nCheck detail: ${env.BUILD_URL}"
-
-      emailext body: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} succeeded.\n\nCheck detail: ${env.BUILD_URL}" ,
-          subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} succeeded",
-          recipientProviders: [
-            [$class: 'RequesterRecipientProvider'],
-            [$class: 'CulpritsRecipientProvider'],
-            [$class: 'DevelopersRecipientProvider'],
-            [$class: 'UpstreamComitterRecipientProvider']
-          ]
-    }
-
-  } catch (err) {
-    currentBuild.result = 'FAILURE'
-
-    // catch all failures to send out notification
-    // slackSend channel: slackChannel,
-    //           color: 'warning',
-    //           message: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed.\n\nError: ${err}\n\nCheck detail: ${env.BUILD_URL}"
-
-    emailext body: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed.\n\nError: ${err}\n\nCheck detail: ${env.BUILD_URL}" ,
-        subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed",
-        recipientProviders: [
-          [$class: 'RequesterRecipientProvider'],
-          [$class: 'CulpritsRecipientProvider'],
-          [$class: 'DevelopersRecipientProvider'],
-          [$class: 'UpstreamComitterRecipientProvider']
-        ]
-
-    throw err
-  }
+  pipeline.end()
+}
 }
