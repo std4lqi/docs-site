@@ -11,7 +11,7 @@
  */
 
 node('ubuntu1804-docker-2c-2g') {
-docker.image('markackertca/zowe-base:wip').inside {
+docker.image('markackertca/zowe-base:wip').inside('-u root') {
   // FIXME: this should be fixed in image
   sh 'mkdir -p /root && cd ~ && pwd'
 
