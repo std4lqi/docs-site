@@ -101,28 +101,24 @@ docker.image('markackertca/zowe-base:wip').inside('-u root') {
   // we have a custom build command
   pipeline.build(
     operation: {
-      ansiColor('xterm') {
-        sh 'npm install'
-        sh "PUBLISH_TARGET_PATH=${publishTargetPath} " +
-           "NODE_OPTIONS=--max_old_space_size=4096 " +
-           "npm run docs:build"
-      }
+      sh 'npm install'
+      sh "PUBLISH_TARGET_PATH=${publishTargetPath} " +
+          "NODE_OPTIONS=--max_old_space_size=4096 " +
+          "npm run docs:build"
     }
   )
 
   pipeline.test(
     name          : 'Broken Links',
     operation         : {
-      ansiColor('xterm') {
-        // list all files generated
-        sh "find .deploy | grep -v '.deploy/.git'"
-        // check broken links
-        timeout(30) {
-          if (FULL_SITE_LINKS_CHECK) {
-            sh 'npm run test:links'
-          } else {
-            sh "npm run test:links -- --start-point /${publishTargetPathConverted}/"
-          }
+      // list all files generated
+      sh "find .deploy | grep -v '.deploy/.git'"
+      // check broken links
+      timeout(30) {
+        if (FULL_SITE_LINKS_CHECK) {
+          sh 'npm run test:links'
+        } else {
+          sh "npm run test:links -- --start-point /${publishTargetPathConverted}/"
         }
       }
     },
@@ -133,19 +129,17 @@ docker.image('markackertca/zowe-base:wip').inside('-u root') {
     name          : "Generate PDF",
     isSkippable   : true,
     stage         : {
-      ansiColor('xterm') {
-        timeout(time: 1, unit: 'HOURS') {
-          sh 'npm run docs:pdf'
-        }
-        if (fileExists('.deploy/.pdf/out/Zowe_Documentation.pdf')) {
-          sh "cp .deploy/.pdf/out/Zowe_Documentation.pdf .deploy/${publishTargetPathConverted}/"
-        } else {
-          error 'Failed to generate PDF document.'
-        }
-        // clean up pdf tmp folder
-        echo 'Cleaning up .deploy/.pdf ...'
-        sh 'rm -fr .deploy/.pdf || true'
+      timeout(time: 1, unit: 'HOURS') {
+        sh 'npm run docs:pdf'
       }
+      if (fileExists('.deploy/.pdf/out/Zowe_Documentation.pdf')) {
+        sh "cp .deploy/.pdf/out/Zowe_Documentation.pdf .deploy/${publishTargetPathConverted}/"
+      } else {
+        error 'Failed to generate PDF document.'
+      }
+      // clean up pdf tmp folder
+      echo 'Cleaning up .deploy/.pdf ...'
+      sh 'rm -fr .deploy/.pdf || true'
     },
     timeout: [time: 20, unit: 'MINUTES']
   )
