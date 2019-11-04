@@ -82,11 +82,11 @@ docker.image('markackertca/zowe-base:wip').inside('-u root') {
           error 'Failed to initialize GitHub instance.'
       }
       githubDeploy.init([
-        repository                 : TEST_REPORSITORY,
+        repository                 : GITHUB_REPOSITORY,
         branch                     : PUBLISH_BRANCH,
         folder                     : '.deploy',
         email                      : lib.Constants.DEFAULT_GITHUB_ROBOT_EMAIL,
-        usernamePasswordCredential : 'zowe-github',
+        usernamePasswordCredential : lib.Constants.DEFAULT_LFJ_GITHUB_ROBOT_CREDENTIAL,
       ])
       githubDeploy.cloneRepository()
 
