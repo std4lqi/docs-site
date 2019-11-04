@@ -62,8 +62,11 @@ docker.image('markackertca/zowe-base:wip').inside('-u root') {
     packageName: 'org.zowe.docs',
     github: [
       email                      : lib.Constants.DEFAULT_GITHUB_ROBOT_EMAIL,
-      usernamePasswordCredential : 'zowe-github',
+      usernamePasswordCredential : lib.Constants.DEFAULT_LFJ_GITHUB_ROBOT_CREDENTIAL,
     ],
+    disableArtifactory            : true,
+    disablePax                    : true,
+
     // FIXME: ideally this should set to false (using default by remove this line)
     ignoreAuditFailure            : true
   )
