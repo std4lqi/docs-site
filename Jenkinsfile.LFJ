@@ -10,7 +10,7 @@
  * Copyright IBM Corporation 2018, 2019
  */
 
-node('ubuntu1804-docker-2c-2g') {
+node('ubuntu1804-docker-4c-4g') {
 docker.image('markackertca/zowe-base:wip').inside('-u root') {
   def lib = library("jenkins-library").org.zowe.jenkins_shared_library
 
@@ -103,7 +103,7 @@ docker.image('markackertca/zowe-base:wip').inside('-u root') {
     operation: {
       sh 'npm install'
       sh "PUBLISH_TARGET_PATH=${publishTargetPath} " +
-          "NODE_OPTIONS=--max_old_space_size=4096 " +
+          "NODE_OPTIONS=--max_old_space_size=3072 " +
           "npm run docs:build"
     }
   )
