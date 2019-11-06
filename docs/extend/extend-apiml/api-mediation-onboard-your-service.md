@@ -1,18 +1,32 @@
-# Onboard your service with the Zowe API Meditation Layer
+# Onboard a service with the Zowe API Meditation Layer
 
-Use this guide to onboard your REST API service into the Zowe API Mediation Layer. This article outlines a step-by-step process to make your API service available in the API Mediation Layer.
+Use this guide to onboard a REST service into the Zowe API Mediation Layer. This article outlines a step-by-step process to make a API service available in the API Mediation Layer.
 
-## Communication between the application client and application server
+## Publishing Services on the API Mediation Layer
 
-The API ML Discovery Service uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a communication technology. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
+The API Mediation Layer allows services in the mainframe to be visible in the API Catalog. Through the Catalog, users can see if the services are currently available and accepting requests.  
 
-Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to register your service to the API ML Discovery Service. Use Eureka endpoints to register your service and send a periodic heartbeat to the Discovery Service. 
+ The API ML Discovery Service uses [Netflix/Eureka](https://github.com/Netflix/eureka) as a REST services registry. Eureka is a REST (Representational State Transfer) based service that is primarily used to locate services.
+
+Eureka has [endpoints](https://github.com/Netflix/eureka/wiki/Eureka-REST-operations) to register your service to the API ML Discovery Service. Use Eureka endpoints to register your service and send a periodic heartbeat to the Discovery Service.
+
+The process of onboarding depends on the method that is used to develop the API service.
+      
+Required parameters should be defined and sent at registration time. For acting as a eureka client, there are eureka-client libraries that depend on the language that is used. 
+
+**Examples:**
+
+- [python-eureka-client](https://pypi.org/project/py-eureka-client/)
+
+- [eureka-js-client](https://www.npmjs.com/package/eureka-js-client)
+
+ - [Rest API developed based on Java](https://www.zowe.org/docs-site/latest/extend/extend-apiml/api-mediation-onboard-overview.html#sample-rest-api-service)
 
 ### Service registration
 
-Registration requires that the following list of parameters is defined by Eureka. These parameters are sent to the server at the time of registration. 
+Eureka requires that the following list of parameters is defined by the registration configuration. These parameters are sent to the Eureka registry at the time of registration. 
 
-When your application starts, call the following API with the `POST` HTTP method in the following format:
+When your application starts, call the following service with the HTTP `POST` method in the following format:
 
 ```
 https://{eureka_hostname}:{eureka_port}/eureka/apps/{serviceId}
@@ -43,28 +57,20 @@ The following code block shows the format of the parameters in your `POST` call:
 where:
 
  * **app** is the service id
- * **ipAddr** is the ip address of instance
- * **hostname** is the hostname of instance
- * **port** is the port of instance when you use http, set `enabled="true"`
- * **securePort** is the port of instance when you use https, set `enabled="true"`
+ * **ipAddr** is the ip address of this specific service instance
+ * **hostname** is the hostname of the instance
+ * **port** is the port of the instance when you use http, set `enabled` to `true`
+ * **securePort** is the port of the instance when you use https, set `enabled` to `true`
  * **vipAddress** is the service id when you use http
  * **secureVipAddress** is the service id when you use https
- * **instanceId** is a unique id for an instance. Define a unique value for the instanceId in the following format: ```{hostname}:{serviceId}:{port}```
- * **metadata** is the set of parameters described in the following topic [the metadata of service]()
-
-### Sending a heartbeat to API Meditation Layer Discovery Service
-
-After registration, a service must send a heartbeat periodically to the Discovery Service to indicate that the service is available. When the Discovery Service does not receive a heartbeat, the service instance is deleted from the Discovery Service.
-
-**Note:** We recommend that the interval for the heartbeat is no more than 30 seconds.
-
-Use the `PUT` HTTP method in the following format to tell the Discovery Service that your service is available:
-
-```https://{eureka_hostname}:{eureka_port}/eureka/apps/{serviceId}/{instanceId}```
+ * **instanceId** is a unique id for the instance. Define a unique value for the instanceId in the following format: 
+ 
+    ```{hostname}:{serviceId}:{port}```
+ * **metadata** is the set of parameters described in the following section [the metadata of service](**INSERT LINK HERE**)
 
 ## API Meditation Layer Service Onboarding Metadata
 
-At registration time, provide metadata in the following format which include the following parameters:
+At registration time, provide metadata in the following format and include the following parameters:
 
 ```xml
 <metadata>
@@ -132,11 +138,11 @@ Define service information for API Catalog
 Define routing information for APIML Gateway.
 <!--Add more info for routing-->
 
-   * **apiml.routes._prefix_.gatewayUrl**
+   * **apiml.routes._${prefix}_.gatewayUrl**
 
        Both gatewayUrl and serviceUrl parameters specify how the API service endpoints are mapped to the API gateway endpoints. The gatewayUrl parameter sets the target endpoint on the gateway.
        
-   * **apiml.routes._prefix_.serviceUrl**
+   * **apiml.routes._${prefix}_.serviceUrl**
 
        Both gatewayUrl and serviceUrl parameters specify how the API service endpoints are mapped to the API gateway endpoints. The serviceUrl parameter points to the target endpoint on the gateway.
 
@@ -144,37 +150,40 @@ Define routing information for APIML Gateway.
 ### API Info Parameters - apiml.apiInfo.*
 Define api parameters for API (Swagger) documentation
 
-   * **apiml.apiInfo._prefix_.apiId**
+   * **apiml.apiInfo._${prefix}_.apiId**
       
        Specifies the API identifier that is registered in the API Mediation Layer installation. The API ID uniquely identifies the API in the API Mediation Layer. The same API can be provided by multiple services. The API ID can be used to locate the same APIs that are provided by different services. The creator of the API defines this ID. The API ID needs to be a string of up to 64 characters that use lowercase alphanumeric characters and a dot: `.`. We recommend that you use your organization as the prefix.
        
-   * **apiml.apiInfo._prefix_.gatewayUrl**
+   * **apiml.apiInfo._${prefix}_.gatewayUrl**
       
        The base path at the API gateway where the API is available. Ensure that it is the same path as the _gatewayUrl_ value in the _routes_ sections.
+
+        **Important!** Ensure that each of the values for gatewayUrl parameter is unique in the configuration. Duplicate gatewayUrl values may cause requests to be routed to the wrong service URL.
           
-   * **apiml.apiInfo._prefix_.documentationUrl**
+   * **apiml.apiInfo._${prefix}_.documentationUrl**
       
        (Optional) Link to external documentation, if needed. The link to the external documentation can be included along with the Swagger documentation.
        
-   * **apiml.apiInfo._prefix_.swaggerUrl**
+   * **apiml.apiInfo._${prefix}_.swaggerUrl**
       
        (Optional) Specifies the HTTP or HTTPS address where the Swagger JSON document is available.             
-     
-     **Important!** Ensure that each of the values for gatewayUrl parameter is unique in the configuration. Duplicate gatewayUrl values may cause requests to be routed to the wrong service URL.
 
-The process of onboarding depends on the method that is used to develop the API service.
+### Sending a heartbeat to API Meditation Layer Discovery Service
 
- - Rest API developed based on non-Java(such as Python, NodeJS)
-      
-   Required parameters should be defined and sent at registration time. For acting as a eureka client, there are eureka-client libraries depends on the language. (for example, [python-eureka-client](https://pypi.org/project/py-eureka-client/), [eureka-js-client](https://www.npmjs.com/package/eureka-js-client))
+After registration, a service must send a heartbeat periodically to the Discovery Service to indicate that the service is available. When the Discovery Service does not receive a heartbeat, the service instance is deleted from the Discovery Service.
 
- - [Rest API developed based on Java](https://www.zowe.org/docs-site/latest/extend/extend-apiml/api-mediation-onboard-overview.html#sample-rest-api-service)
+**Note:** We recommend that the interval for the heartbeat is no more than 30 seconds.
+
+Use the HTTP `PUT` method in the following format to tell the Discovery Service that your service is available:
+
+```https://{eureka_hostname}:{eureka_port}/eureka/apps/{serviceId}/{instanceId}```
+
 
 ### Validate that your service is successfully on-boarded to API Meditation Layer
 
 **Follow these steps:**
 
- 1. Use the `GET` HTTP method in the following format to query the Discovery Service for your service instance information:
+ 1. Use the HTTP `GET` method in the following format to query the Discovery Service for your service instance information:
  
     ```
     http://{eureka_hostname}:{eureka_port}/eureka/apps/{serviceId}
@@ -221,7 +230,7 @@ The process of onboarding depends on the method that is used to develop the API 
  
   4. Check that you can access your API service endpoints through the Gateway.
  
-  5. Check that you can access your API service endpoints directly outside of the Gateway.  
+  5. (Optional) Check that you can access your API service endpoints directly outside of the Gateway.  
 
 ### External Resources
 
