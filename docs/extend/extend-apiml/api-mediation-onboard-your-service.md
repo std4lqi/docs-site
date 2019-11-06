@@ -24,9 +24,7 @@ Required parameters should be defined and sent at registration time. For acting 
 
 ### Service registration
 
-Eureka requires that the following list of parameters is defined by the registration configuration. These parameters are sent to the Eureka registry at the time of registration. 
-
-When your application starts, call the following service with the HTTP `POST` method in the following format:
+Eureka requires that the parameters in the following `POST` call are defined in the registration configuration. These parameters are sent to the Eureka registry at the time of registration. 
 
 ```
 https://{eureka_hostname}:{eureka_port}/eureka/apps/{serviceId}
